@@ -77,12 +77,7 @@ def post_process_csv(path_to_csv_file, csv_file):
         # Check for whether we need to split up the file
         if len(previous_data_row) == 3:
             seconds_diff = data_row[2] - previous_data_row[2]
-
-            x1 = int(previous_data_row[0])
-            x2 = int(data_row[0])
-            y1 = int(previous_data_row[1])
-            y2 = int(data_row[1])
-            meters_diff = sqrt((x2 - x1)**2 + (y2 - y1)**2)
+            meters_diff = calculate_meters_diff(data_row, previous_data_row)
 
             if seconds_diff > max_number_of_seconds_diff and meters_diff > max_number_of_meters_diff:
                 print("Seconds diff: " + str(seconds_diff) + " and meters diff: " + str(meters_diff))
@@ -92,11 +87,23 @@ def post_process_csv(path_to_csv_file, csv_file):
                 output_file = open(output_filename, "w")
                 output_files.append(output_filename)
 
-        output_file.write(str(data_row[0]) + " " + str(data_row[1]) + " " + str(data_row[2]))
-        output_file.write("\n")
+        # Only add if different position
+        if calculate_meters_diff(data_row, previous_data_row) >= 0.01:
+            output_file.write(str(data_row[0]) + " " + str(data_row[1]) + " " + str(data_row[2]))
+            output_file.write("\n")
+
         previous_data_row = data_row
 
     return output_files
+
+
+# Calculates the meters difference between the two frames
+def calculate_meters_diff(data_row, previous_data_row):
+    x1 = int(previous_data_row[0])
+    x2 = int(data_row[0])
+    y1 = int(previous_data_row[1])
+    y2 = int(data_row[1])
+    return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 
 # Prints some info regarding the UTM zone
